@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FlowyNote">
 <title>FlowyNote</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%233B6B4A'/><text x='50' y='44' font-family='Georgia,serif' font-size='38' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'>F</text><text x='50' y='76' font-family='Georgia,serif' font-size='28' font-weight='700' fill='%23A8CCB0' text-anchor='middle' dominant-baseline='middle'>N</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%233B6B4A'/><text x='50' y='44' font-family='Georgia,serif' font-size='38' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'>F</text><text x='50' y='76' font-family='Georgia,serif' font-size='28' font-weight='700' fill='%23A8CCB0' text-anchor='middle' dominant-baseline='middle'>N</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -384,23 +387,24 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   z-index: 500;
   align-items: center; justify-content: space-around;
 }
+/* NEVER show on desktop */
+@media (min-width: 641px) { .mob-bar { display: none !important; } }
 .mob-bar-btn {
-  flex: 1; height: 100%; border: none; background: none;
+  flex: 1; height: 56px; border: none; background: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; cursor: pointer; color: var(--text3);
+  gap: 2px; cursor: pointer; color: var(--text3);
   font-size: 10px; font-family: 'Nunito', sans-serif;
-  transition: color .13s;
+  transition: color .13s; -webkit-tap-highlight-color: transparent;
 }
-.mob-bar-btn svg { width: 22px; height: 22px; }
+.mob-icon { font-size: 20px; line-height: 1; }
 .mob-bar-btn.active { color: var(--accent); }
-.mob-bar-btn.active svg path, .mob-bar-btn.active svg circle,
-.mob-bar-btn.active svg rect, .mob-bar-btn.active svg line { stroke: var(--accent); }
  
 /* Mobile drawer overlay */
 .mob-drawer-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.35); z-index: 600;
 }
+@media (min-width: 641px) { .mob-drawer-overlay, .mob-drawer { display: none !important; } }
 .mob-drawer-overlay.show { display: block; }
 .mob-drawer {
   position: fixed; bottom: calc(56px + env(safe-area-inset-bottom)); left: 0; right: 0;
@@ -583,20 +587,20 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
  
 <!-- MOBILE NAV BAR (outside appShell so it shows on mobile regardless) -->
 <nav class="mob-bar">
-  <button class="mob-bar-btn" id="mobBtnDiary" onclick="mobShow('diary')" title="Diario">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+  <button class="mob-bar-btn" id="mobBtnDiary" onclick="mobShow('diary')">
+    <span class="mob-icon">☰</span>
     Diario
   </button>
-  <button class="mob-bar-btn active" id="mobBtnWrite" onclick="mobShow('write')" title="Escribir">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  <button class="mob-bar-btn active" id="mobBtnWrite" onclick="mobShow('write')">
+    <span class="mob-icon">✏️</span>
     Escribir
   </button>
-  <button class="mob-bar-btn" id="mobBtnCal" onclick="mobShow('cal')" title="Calendario">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  <button class="mob-bar-btn" id="mobBtnCal" onclick="mobShow('cal')">
+    <span class="mob-icon">📆</span>
     Calendario
   </button>
-  <button class="mob-bar-btn" id="mobBtnSync" onclick="mobShow('sync')" title="Sincronizar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+  <button class="mob-bar-btn" id="mobBtnSync" onclick="mobShow('sync')">
+    <span class="mob-icon">↺</span>
     Sincronizar
   </button>
 </nav>
