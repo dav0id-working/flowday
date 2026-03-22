@@ -456,7 +456,9 @@ body.is-mobile .day-date { font-size: 22px; }
 body.is-mobile .day-meta { font-size: 11px; }
 body.is-mobile .toolbar { gap: 6px; margin-bottom: 12px; }
 body.is-mobile .tb-btn { padding: 6px 10px; font-size: 12px; }
-body.is-mobile .del-block-btn { opacity: 1 !important; left: -20px !important; top: 5px !important; width: 16px !important; height: 16px !important; font-size: 11px !important; }
+body.is-mobile .del-block-btn { display: none !important; }
+/* On mobile, row-actions always visible so user can access ⋯ menu */
+body.is-mobile .row-actions { opacity: 1 !important; }
 body.is-mobile .block-text { font-size: 14px; }
 body.is-mobile .stats-bar { gap: 10px; flex-wrap: wrap; }
 body.is-mobile .stat { font-size: 11px; }
@@ -1685,4 +1687,3 @@ if(session && session.access_token){
 </script>
 </body>
 </html>
- 
