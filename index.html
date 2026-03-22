@@ -388,7 +388,6 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   align-items: center; justify-content: space-around;
 }
 /* NEVER show on desktop */
-@media (min-width: 769px) { .mob-bar { display: none !important; } }
 .mob-bar-btn {
   flex: 1; height: 56px; border: none; background: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -404,7 +403,6 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.35); z-index: 600;
 }
-@media (min-width: 769px) { .mob-drawer-overlay, .mob-drawer { display: none !important; } }
 .mob-drawer-overlay.show { display: block; }
 .mob-drawer {
   position: fixed; bottom: calc(56px + env(safe-area-inset-bottom)); left: 0; right: 0;
@@ -440,62 +438,98 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   .main { padding: 28px 32px; }
 }
  
-@media (max-width: 768px) {
-  /* Full mobile layout */
-  html, body { height: 100%; overflow: hidden; }
-  .app { flex-direction: column; height: 100dvh; overflow: hidden; }
+/* Mobile styles — applied via JS class on <body> */
+body.is-mobile .right-panel { display: none !important; }
+body.is-mobile .app { flex-direction: column; overflow: hidden; }
+body.is-mobile .sidebar {
+  position: fixed; left: 0; top: 0;
+  bottom: 0; width: 82vw; max-width: 300px;
+  transform: translateX(-100%); transition: transform .25s ease;
+  z-index: 650; box-shadow: 4px 0 20px rgba(0,0,0,.12);
+}
+body.is-mobile .sidebar.mob-open { transform: translateX(0); }
+body.is-mobile .main {
+  flex: 1; width: 100%; overflow-y: auto; min-height: 0;
+  padding: 20px 16px 80px;
+}
+body.is-mobile .day-date { font-size: 22px; }
+body.is-mobile .day-meta { font-size: 11px; }
+body.is-mobile .toolbar { gap: 6px; margin-bottom: 12px; }
+body.is-mobile .tb-btn { padding: 6px 10px; font-size: 12px; }
+body.is-mobile .del-block-btn { opacity: 1 !important; left: -20px !important; top: 5px !important; width: 16px !important; height: 16px !important; font-size: 11px !important; }
+body.is-mobile .block-text { font-size: 14px; }
+body.is-mobile .stats-bar { gap: 10px; flex-wrap: wrap; }
+body.is-mobile .stat { font-size: 11px; }
+body.is-mobile .empty-write-hint { padding: 6px 20px; font-size: 13px; }
+body.is-mobile .add-block-hint { padding: 8px 0 8px 20px; font-size: 13px; }
+body.is-mobile .notif { right: 12px; font-size: 13px; }
  
-  /* Sidebar hidden off-screen */
-  .sidebar {
-    position: fixed; left: 0; top: 0;
-    bottom: calc(56px + env(safe-area-inset-bottom));
-    width: 82vw; max-width: 300px;
-    transform: translateX(-100%); transition: transform .25s ease;
-    z-index: 650; box-shadow: 4px 0 20px rgba(0,0,0,.12);
-  }
-  .sidebar.mob-open { transform: translateX(0); }
-  .right-panel { display: none; }
+/* ══ MOBILE NAV BAR ══ */
+.mob-bar {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  z-index: 800;
+  align-items: stretch; justify-content: space-around;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+body.is-mobile .mob-bar { display: flex; }
+body:not(.is-mobile) .mob-bar { display: none !important; }
  
-  .main {
-    flex: 1;
-    padding: 20px 16px calc(72px + env(safe-area-inset-bottom));
-    overflow-y: auto; width: 100%;
-    /* use dvh so Safari's browser bar is accounted for */
-    min-height: 0;
-  }
+.mob-bar-btn {
+  flex: 1; min-height: 52px; border: none; background: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; cursor: pointer; color: var(--text3);
+  font-size: 10px; font-family: 'Nunito', sans-serif;
+  transition: color .13s; -webkit-tap-highlight-color: transparent;
+  padding: 8px 0;
+}
+.mob-icon { font-size: 18px; line-height: 1; display: block; }
+.mob-bar-btn.active { color: var(--accent); }
+.mob-bar-btn.active .mob-icon { transform: scale(1.1); }
  
-  .day-date { font-size: 24px; }
-  .day-meta { font-size: 11px; }
-  .toolbar { gap: 6px; margin-bottom: 12px; }
-  .tb-btn { padding: 6px 10px; font-size: 12px; }
+/* ══ MOBILE DRAWER ══ */
+.mob-drawer-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 850;
+  opacity: 0; transition: opacity .25s;
+}
+.mob-drawer-overlay.show { display: block; opacity: 1; }
+.mob-drawer {
+  display: none;
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: var(--surface);
+  border-radius: 18px 18px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 0 0 env(safe-area-inset-bottom, 16px);
+  z-index: 900;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+.mob-drawer.show { display: block; transform: translateY(0); }
+.mob-drawer-handle {
+  width: 40px; height: 4px; background: var(--border2);
+  border-radius: 2px; margin: 12px auto 4px;
+  cursor: grab;
+}
+#mobDrawerContent { padding: 8px 20px 20px; }
  
-  /* On mobile show del button always (no hover needed on touch) */
-  .del-block-btn { opacity: 0.6 !important; }
-  .ig { width: 18px; }
-  .bullet-col { width: 20px; }
-  .block-text { font-size: 14px; }
-  .rollover-banner { padding: 10px 12px; font-size: 13px; }
-  .stats-bar { gap: 12px; flex-wrap: wrap; }
-  .stat { font-size: 11px; }
+body:not(.is-mobile) .mob-drawer-overlay,
+body:not(.is-mobile) .mob-drawer { display: none !important; }
  
-  /* Show mobile nav */
-  .mob-bar { display: flex; }
- 
-  /* Notif above nav bar */
-  .notif { bottom: calc(68px + env(safe-area-inset-bottom)); right: 12px; font-size: 13px; }
- 
-  /* ctx menu bottom of screen on mobile */
-  .ctx-menu.show {
-    left: 8px !important; right: 8px !important;
-    width: auto; min-width: unset;
-    top: auto !important;
-    bottom: calc(68px + env(safe-area-inset-bottom));
-    max-height: 60vh; overflow-y: auto;
-  }
- 
-  .date-popup { left: 8px !important; right: 8px !important; width: auto; }
-  .empty-write-hint { padding: 6px 20px; font-size: 13px; }
-  .add-block-hint { padding: 8px 0 8px 20px; font-size: 13px; }
+/* ctx menu mobile */
+body.is-mobile .ctx-menu.show {
+  left: 8px !important; right: 8px !important;
+  width: auto; min-width: unset;
+  top: auto !important; bottom: 60px;
+  max-height: 60vh; overflow-y: auto;
+}
+body.is-mobile .date-popup {
+  left: 8px !important; right: 8px !important; width: auto;
+  bottom: 60px; top: auto !important;
 }
  
 </style>
@@ -1232,51 +1266,83 @@ document.addEventListener('click',e=>{
 let notifT;
 function showNotif(msg){ const el=document.getElementById('notif'); el.textContent=msg; el.classList.add('show'); clearTimeout(notifT); notifT=setTimeout(()=>el.classList.remove('show'),2400); }
  
+// ── MOBILE DETECTION (JS-based, not CSS) ──
+function detectMobile(){
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const isMob = w <= 768 || (w <= 1024 && 'ontouchstart' in window && w < h);
+  document.body.classList.toggle('is-mobile', isMob);
+  // Update app height using actual window height (fixes Safari vh bug)
+  if(isMob){
+    document.getElementById('appShell').style.height = window.innerHeight + 'px';
+  } else {
+    document.getElementById('appShell').style.height = '';
+  }
+  return isMob;
+}
+window.addEventListener('resize', ()=>{ detectMobile(); });
+window.addEventListener('orientationchange', ()=>{ setTimeout(detectMobile, 200); });
+ 
 // ── MOBILE NAV ──
-let mobView = 'write'; // write | diary | cal | sync
+let mobView = 'write';
  
 function mobShow(view){
   mobView = view;
-  // Update active button
   ['diary','write','cal','sync'].forEach(v=>{
-    const b=document.getElementById('mobBtn'+v.charAt(0).toUpperCase()+v.slice(1));
+    const b = document.getElementById('mobBtn'+v.charAt(0).toUpperCase()+v.slice(1));
     if(b) b.classList.toggle('active', v===view);
   });
  
   if(view === 'write'){
     closeMobDrawer();
-    // Ensure sidebar is closed
     document.querySelector('.sidebar')?.classList.remove('mob-open');
     return;
   }
  
-  const drawer = document.getElementById('mobDrawer');
   const content = document.getElementById('mobDrawerContent');
+  const drawer  = document.getElementById('mobDrawer');
   const overlay = document.getElementById('mobOverlay');
  
   if(view === 'diary'){
-    // Build day list inside drawer
     const sorted = Object.keys(state.days).sort((a,b)=>b.localeCompare(a));
-    const today = todayKey();
+    const today  = todayKey();
     content.innerHTML = `
-      <div style="font-family:'Lora',serif;font-size:18px;color:var(--text);margin-bottom:12px;">Mis días</div>
+      <div style="font-family:'Lora',serif;font-size:20px;color:var(--text);margin-bottom:14px;font-weight:500;">Mis días</div>
       ${sorted.map(dk=>{
         const day=state.days[dk]; const tasks=day.blocks.filter(b=>b.type==='task');
         const pend=tasks.filter(b=>b.status==='todo'||b.status==='progress').length;
-        return `<div class="day-item${dk===state.activeDayId?' active':''}" onclick="activateDay('${dk}');closeMobDrawer();">
+        return `<div class="day-item${dk===state.activeDayId?' active':''}" style="padding:10px 12px;margin-bottom:4px;" onclick="activateDay('${dk}');closeMobDrawer();">
           <span class="day-name">${formatShort(dk)}${dk===today?' — Hoy':''}</span>
           ${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}
         </div>`;
       }).join('')}
-      <div class="new-day-btn" style="margin:10px 0 0;" onclick="createNewDay();closeMobDrawer();">＋ Nuevo día</div>`;
+      <div class="new-day-btn" style="margin:12px 0 0;" onclick="createNewDay();closeMobDrawer();">＋ Nuevo día</div>`;
   }
  
   if(view === 'cal'){
     content.innerHTML = `
-      <div style="font-family:'Lora',serif;font-size:18px;color:var(--text);margin-bottom:12px;">Calendario</div>
-      <div class="mini-cal" id="miniCalMob"></div>`;
-    // Render into the mob calendar
-    renderCalendarInto('miniCalMob');
+      <div style="font-family:'Lora',serif;font-size:20px;color:var(--text);margin-bottom:14px;font-weight:500;">Calendario</div>
+      <div class="mini-cal" id="miniCalMob"></div>
+      <div style="margin-top:20px;">
+        <div class="rp-title" style="margin-bottom:10px;">Estados de tarea</div>
+        <div class="rp-status-legend">
+          <div class="rp-sl-item s-todo"><span class="rp-sl-icon">☐</span><span>To-do — pendiente</span></div>
+          <div class="rp-sl-item s-progress"><span class="rp-sl-icon">◑</span><span>En progreso</span></div>
+          <div class="rp-sl-item s-done"><span class="rp-sl-icon">✓</span><span>Completada</span></div>
+          <div class="rp-sl-item s-cancelled"><span class="rp-sl-icon">✗</span><span>Cancelada</span></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="rp-title" style="margin-bottom:10px;">Atajos de teclado</div>
+        <div class="rp-shortcuts">
+          <div class="rp-sc-row"><kbd>Shift+↵</kbd><span>Agregar comentario</span></div>
+          <div class="rp-sc-row"><kbd>Ctrl+T</kbd><span>Cambiar tipo</span></div>
+          <div class="rp-sc-row"><kbd>Ctrl+D</kbd><span>Fecha límite</span></div>
+          <div class="rp-sc-row"><kbd>Tab</kbd><span>Indentar</span></div>
+          <div class="rp-sc-row"><kbd>↵</kbd><span>Nuevo bloque</span></div>
+        </div>
+      </div>`;
+    setTimeout(()=>renderCalendarInto('miniCalMob'), 50);
   }
  
   if(view === 'sync'){
@@ -1284,14 +1350,45 @@ function mobShow(view){
   }
  
   overlay.classList.add('show');
-  requestAnimationFrame(()=> drawer.classList.add('show'));
+  drawer.style.display = 'block';
+  requestAnimationFrame(()=>requestAnimationFrame(()=> drawer.classList.add('show')));
+  initDrawerSwipe(drawer, overlay);
 }
  
 function closeMobDrawer(){
-  const drawer = document.getElementById('mobDrawer');
+  const drawer  = document.getElementById('mobDrawer');
   const overlay = document.getElementById('mobOverlay');
   drawer.classList.remove('show');
   overlay.classList.remove('show');
+  setTimeout(()=>{ if(!drawer.classList.contains('show')) drawer.style.display='none'; }, 300);
+}
+ 
+// Touch swipe to close drawer
+function initDrawerSwipe(drawer, overlay){
+  let startY = 0, curY = 0, dragging = false;
+  const handle = drawer.querySelector('.mob-drawer-handle');
+ 
+  function onStart(e){
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragging = true;
+    drawer.style.transition = 'none';
+  }
+  function onMove(e){
+    if(!dragging) return;
+    curY = (e.touches ? e.touches[0].clientY : e.clientY) - startY;
+    if(curY > 0) drawer.style.transform = `translateY(${curY}px)`;
+  }
+  function onEnd(){
+    if(!dragging) return;
+    dragging = false;
+    drawer.style.transition = '';
+    drawer.style.transform = '';
+    if(curY > 80) closeMobDrawer();
+  }
+  handle.addEventListener('touchstart', onStart, {passive:true});
+  handle.addEventListener('touchmove', onMove, {passive:true});
+  handle.addEventListener('touchend', onEnd);
+  overlay.addEventListener('touchstart', closeMobDrawer, {passive:true});
 }
  
 // ── SYNC / EXPORT / IMPORT ──
@@ -1553,6 +1650,7 @@ async function doLogout(){
 }
  
 async function initApp(){
+  detectMobile();
   // Hide login, show app
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appShell').style.display = 'flex';
@@ -1576,15 +1674,13 @@ async function initApp(){
 }
  
 // ── INIT ──
+detectMobile(); // run before showing anything
 loadSession();
 if(session && session.access_token){
-  // Already logged in — go straight to app
   initApp();
 } else {
-  // Show login screen
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('appShell').style.display = 'none';
-  document.querySelector('.mob-bar').style.display = 'none';
 }
 </script>
 </body>
