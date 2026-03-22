@@ -388,7 +388,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   align-items: center; justify-content: space-around;
 }
 /* NEVER show on desktop */
-@media (min-width: 641px) { .mob-bar { display: none !important; } }
+@media (min-width: 769px) { .mob-bar { display: none !important; } }
 .mob-bar-btn {
   flex: 1; height: 56px; border: none; background: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -404,7 +404,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.35); z-index: 600;
 }
-@media (min-width: 641px) { .mob-drawer-overlay, .mob-drawer { display: none !important; } }
+@media (min-width: 769px) { .mob-drawer-overlay, .mob-drawer { display: none !important; } }
 .mob-drawer-overlay.show { display: block; }
 .mob-drawer {
   position: fixed; bottom: calc(56px + env(safe-area-inset-bottom)); left: 0; right: 0;
@@ -440,45 +440,41 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   .main { padding: 28px 32px; }
 }
  
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   /* Full mobile layout */
   html, body { height: 100%; overflow: hidden; }
-  .app { flex-direction: column; height: 100vh; overflow: hidden; }
+  .app { flex-direction: column; height: 100dvh; overflow: hidden; }
  
-  /* Sidebar becomes a hidden drawer on mobile — toggled via mob-bar */
+  /* Sidebar hidden off-screen */
   .sidebar {
-    position: fixed; left: 0; top: 0; bottom: calc(56px + env(safe-area-inset-bottom));
-    width: 80vw; max-width: 280px;
+    position: fixed; left: 0; top: 0;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    width: 82vw; max-width: 300px;
     transform: translateX(-100%); transition: transform .25s ease;
     z-index: 650; box-shadow: 4px 0 20px rgba(0,0,0,.12);
   }
   .sidebar.mob-open { transform: translateX(0); }
- 
   .right-panel { display: none; }
  
   .main {
-    flex: 1; padding: 20px 16px calc(72px + env(safe-area-inset-bottom)); /* bottom pad for nav bar + iPhone home bar */
+    flex: 1;
+    padding: 20px 16px calc(72px + env(safe-area-inset-bottom));
     overflow-y: auto; width: 100%;
+    /* use dvh so Safari's browser bar is accounted for */
+    min-height: 0;
   }
  
-  /* Smaller day date on mobile */
   .day-date { font-size: 24px; }
   .day-meta { font-size: 11px; }
- 
-  /* Toolbar wraps tighter */
   .toolbar { gap: 6px; margin-bottom: 12px; }
   .tb-btn { padding: 6px 10px; font-size: 12px; }
  
-  /* Blocks: hide del-block-btn (use ctx menu instead), shrink indent */
-  .del-block-btn { display: none !important; }
+  /* On mobile show del button always (no hover needed on touch) */
+  .del-block-btn { opacity: 0.6 !important; }
   .ig { width: 18px; }
   .bullet-col { width: 20px; }
   .block-text { font-size: 14px; }
- 
-  /* Rollover banner */
   .rollover-banner { padding: 10px 12px; font-size: 13px; }
- 
-  /* Stats bar */
   .stats-bar { gap: 12px; flex-wrap: wrap; }
   .stat { font-size: 11px; }
  
@@ -488,13 +484,16 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   /* Notif above nav bar */
   .notif { bottom: calc(68px + env(safe-area-inset-bottom)); right: 12px; font-size: 13px; }
  
-  /* ctx menu full width on mobile */
-  .ctx-menu.show { left: 8px !important; right: 8px !important; width: auto; min-width: unset; top: auto !important; bottom: calc(68px + env(safe-area-inset-bottom)); }
+  /* ctx menu bottom of screen on mobile */
+  .ctx-menu.show {
+    left: 8px !important; right: 8px !important;
+    width: auto; min-width: unset;
+    top: auto !important;
+    bottom: calc(68px + env(safe-area-inset-bottom));
+    max-height: 60vh; overflow-y: auto;
+  }
  
-  /* date popup full width */
   .date-popup { left: 8px !important; right: 8px !important; width: auto; }
- 
-  /* empty write hint smaller */
   .empty-write-hint { padding: 6px 20px; font-size: 13px; }
   .add-block-hint { padding: 8px 0 8px 20px; font-size: 13px; }
 }
@@ -647,6 +646,10 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   <div class="ctx-sep"></div>
   <div class="ctx-item" onclick="ctxDo('moveToday')">
     <div class="ctx-item-inner">↻ Mover al día de hoy</div>
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" onclick="ctxDo('delete')">
+    <div class="ctx-item-inner">✕ Eliminar bloque</div>
   </div>
 </div>
  
@@ -1586,3 +1589,4 @@ if(session && session.access_token){
 </script>
 </body>
 </html>
+ 
