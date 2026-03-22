@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>FlowyNote</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -375,7 +377,9 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .mob-bar {
   display: none;
   position: fixed; bottom: 0; left: 0; right: 0;
-  height: 56px; background: var(--surface);
+  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
   border-top: 1px solid var(--border);
   z-index: 500;
   align-items: center; justify-content: space-around;
@@ -399,11 +403,11 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 }
 .mob-drawer-overlay.show { display: block; }
 .mob-drawer {
-  position: fixed; bottom: 56px; left: 0; right: 0;
+  position: fixed; bottom: calc(56px + env(safe-area-inset-bottom)); left: 0; right: 0;
   background: var(--surface); border-radius: var(--radius) var(--radius) 0 0;
   border-top: 1px solid var(--border);
   padding: 16px 16px 8px; z-index: 700;
-  max-height: 80vh; overflow-y: auto;
+  max-height: 65vh; overflow-y: auto;
   transform: translateY(100%); transition: transform .25s ease;
 }
 .mob-drawer.show { transform: translateY(0); }
@@ -439,7 +443,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
  
   /* Sidebar becomes a hidden drawer on mobile — toggled via mob-bar */
   .sidebar {
-    position: fixed; left: 0; top: 0; bottom: 56px;
+    position: fixed; left: 0; top: 0; bottom: calc(56px + env(safe-area-inset-bottom));
     width: 80vw; max-width: 280px;
     transform: translateX(-100%); transition: transform .25s ease;
     z-index: 650; box-shadow: 4px 0 20px rgba(0,0,0,.12);
@@ -449,7 +453,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   .right-panel { display: none; }
  
   .main {
-    flex: 1; padding: 20px 16px 72px; /* bottom pad for nav bar */
+    flex: 1; padding: 20px 16px calc(72px + env(safe-area-inset-bottom)); /* bottom pad for nav bar + iPhone home bar */
     overflow-y: auto; width: 100%;
   }
  
@@ -478,10 +482,10 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   .mob-bar { display: flex; }
  
   /* Notif above nav bar */
-  .notif { bottom: 68px; right: 12px; font-size: 13px; }
+  .notif { bottom: calc(68px + env(safe-area-inset-bottom)); right: 12px; font-size: 13px; }
  
   /* ctx menu full width on mobile */
-  .ctx-menu.show { left: 8px !important; right: 8px !important; width: auto; min-width: unset; top: auto !important; bottom: 68px; }
+  .ctx-menu.show { left: 8px !important; right: 8px !important; width: auto; min-width: unset; top: auto !important; bottom: calc(68px + env(safe-area-inset-bottom)); }
  
   /* date popup full width */
   .date-popup { left: 8px !important; right: 8px !important; width: auto; }
