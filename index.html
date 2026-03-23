@@ -819,11 +819,17 @@ function createNewDay(dk){
   showNotif('Día listo · '+formatShort(dk));
 }
 function activateDay(dk){
-  state.activeDayId=dk;
-  // Sync calendar to show this month
-  const[y,m]=dk.split('-').map(Number);
-  calYear=y; calMonth=m-1;
-  save(); renderAll();
+  state.activeDayId = dk;
+  const[y,m] = dk.split('-').map(Number);
+  calYear = y; calMonth = m-1;
+  closeMobDrawer();
+  scheduleSave();
+  renderAll();
+  // Scroll main area to top
+  setTimeout(()=>{
+    const main = document.querySelector('.main');
+    if(main) main.scrollTop = 0;
+  }, 50);
 }
 
 // ── FORMAT ──
@@ -884,13 +890,36 @@ function renderAll(){ renderSidebar(); renderMain(); renderRightPanel(); renderC
 function renderSidebar(){
   const list=document.getElementById('dayList');
   const sorted=Object.keys(state.days).sort((a,b)=>b.localeCompare(a));
+  const today=todayKey();
   list.innerHTML='';
   sorted.forEach(dk=>{
     const day=state.days[dk]; const tasks=day.blocks.filter(b=>b.type==='task'); const pend=tasks.filter(b=>b.status==='todo'||b.status==='progress').length;
-    const el=document.createElement('div');
+    const hasContent = day.blocks.length > 0;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center;gap:4px;padding:0 4px;';
+
+    const el = document.createElement('div');
     el.className='day-item'+(dk===state.activeDayId?' active':'');
+    el.style.flex='1';
     el.innerHTML=`<span class="day-name">${formatShort(dk)}</span>${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}`;
-    el.onclick=()=>activateDay(dk); list.appendChild(el);
+    el.onclick=()=>activateDay(dk);
+
+    wrap.appendChild(el);
+
+    if(dk !== today){
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.title = 'Eliminar día';
+      delBtn.style.cssText = 'flex-shrink:0;width:20px;height:20px;border:1px solid transparent;border-radius:5px;background:none;cursor:pointer;font-size:11px;color:var(--text3);opacity:0;transition:opacity .13s,color .13s,border-color .13s;padding:0;line-height:1;';
+      delBtn.onmouseenter = ()=>{ delBtn.style.opacity='1'; delBtn.style.color='var(--urgent)'; delBtn.style.borderColor='var(--urgent)'; };
+      delBtn.onmouseleave = ()=>{ delBtn.style.opacity='0'; };
+      delBtn.onclick = (e)=>{ e.stopPropagation(); deleteDayFromDrawer(dk, hasContent); };
+      wrap.onmouseenter = ()=>{ delBtn.style.opacity='0.6'; };
+      wrap.onmouseleave = ()=>{ delBtn.style.opacity='0'; };
+      wrap.appendChild(delBtn);
+    }
+
+    list.appendChild(wrap);
   });
 }
 
@@ -1310,9 +1339,13 @@ function mobShow(view){
       ${sorted.map(dk=>{
         const day=state.days[dk]; const tasks=day.blocks.filter(b=>b.type==='task');
         const pend=tasks.filter(b=>b.status==='todo'||b.status==='progress').length;
-        return `<div class="day-item${dk===state.activeDayId?' active':''}" style="padding:10px 12px;margin-bottom:4px;" onclick="activateDay('${dk}');closeMobDrawer();">
-          <span class="day-name">${formatShort(dk)}${dk===today?' — Hoy':''}</span>
-          ${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}
+        const hasContent = day.blocks.length > 0;
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div class="day-item${dk===state.activeDayId?' active':''}" style="flex:1;padding:10px 12px;" onclick="activateDay('${dk}')">
+            <span class="day-name">${formatShort(dk)}${dk===today?' — Hoy':''}</span>
+            ${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}
+          </div>
+          ${dk !== today ? `<button onclick="deleteDayFromDrawer('${dk}',${hasContent})" style="flex-shrink:0;width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:none;cursor:pointer;font-size:14px;color:var(--text3);display:flex;align-items:center;justify-content:center;">✕</button>` : ''}
         </div>`;
       }).join('')}
       <div class="new-day-btn" style="margin:12px 0 0;" onclick="createNewDay();closeMobDrawer();">＋ Nuevo día</div>`;
@@ -1587,6 +1620,26 @@ function calClickDay(dk){
     }
   }
   renderCalendar();
+}
+
+function deleteDayFromDrawer(dk, hasContent){
+  const msg = hasContent
+    ? `¿Eliminar el día ${formatLong(dk)}?\n\nTiene contenido que se perderá. Esta acción no se puede deshacer.`
+    : `¿Eliminar el día ${formatLong(dk)}?`;
+  if(!confirm(msg)) return;
+  delete state.days[dk];
+  const remaining = Object.keys(state.days).sort((a,b)=>b.localeCompare(a));
+  if(state.activeDayId === dk){
+    state.activeDayId = remaining.length ? remaining[0] : null;
+    if(!state.activeDayId){
+      const tk = todayKey(); state.days[tk] = makeDay(tk); state.activeDayId = tk;
+    }
+    const[y,m] = state.activeDayId.split('-').map(Number); calYear=y; calMonth=m-1;
+  }
+  scheduleSave(); renderAll();
+  // Refresh drawer diary list
+  mobShow('diary');
+  showNotif('Día eliminado');
 }
 
 function deleteDay(dk){
