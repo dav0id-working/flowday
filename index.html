@@ -87,6 +87,12 @@
   --accent:#B080E0; --accent-light:#1E1030; --accent2:#E07898; --accent2-light:#2A1020;
   --urgent-light:#280818; --warn-light:#281408; --done-color:#4A3A5C;
 }
+[data-theme="oceano-noche"] {
+  --bg:#060E18; --surface:#0C1822; --surface2:#12222E; --surface3:#182C3A;
+  --border:#1E3648; --border2:#284858; --text:#C8E4F8; --text2:#6AAED8; --text3:#3A7098;
+  --accent:#4A9ED8; --accent-light:#081828; --accent2:#2AB8B8; --accent2-light:#082020;
+  --urgent-light:#200810; --warn-light:#1A1E08; --done-color:#284858;
+}
 [data-theme="arena-noche"] {
   --bg:#141008; --surface:#1E180C; --surface2:#2A2010; --surface3:#342A16;
   --border:#403018; --border2:#544020; --text:#F0E8D0; --text2:#C8A870; --text3:#887050;
@@ -117,6 +123,7 @@
 .theme-dot[data-t="cielo"]        { background: #2878B0; }
 .theme-dot[data-t="pizarra"]      { background: #4060A0; }
 .theme-dot[data-t="bosque-noche"] { background: #5AAA72; }
+.theme-dot[data-t="oceano-noche"] { background: #4A9ED8; }
 .theme-dot[data-t="medianoche"]   { background: #9890D0; }
 .theme-dot[data-t="ciruela"]      { background: #A870D8; }
 .theme-dot[data-t="arena-noche"]  { background: #D4A040; }
@@ -124,6 +131,7 @@
 .theme-dot[data-t="carbon"]       { background: #4A8CC8; }
 /* Dark theme dots get a subtle ring */
 .theme-dot[data-t="bosque-noche"],
+.theme-dot[data-t="oceano-noche"],
 .theme-dot[data-t="medianoche"],
 .theme-dot[data-t="ciruela"],
 .theme-dot[data-t="arena-noche"],
@@ -682,12 +690,13 @@ body.is-mobile .date-popup {
         <div class="theme-dot" data-t="rosa"         data-mode="light" onclick="setTheme('rosa')"         title="Rosa"></div>
         <div class="theme-dot" data-t="cielo"        data-mode="light" onclick="setTheme('cielo')"        title="Cielo"></div>
         <div class="theme-dot" data-t="pizarra"      data-mode="light" onclick="setTheme('pizarra')"      title="Pizarra"></div>
-        <div class="theme-dot" data-t="bosque-noche" data-mode="dark"  onclick="setTheme('bosque-noche')" title="Bosque nocturno"></div>
-        <div class="theme-dot" data-t="medianoche"   data-mode="dark"  onclick="setTheme('medianoche')"   title="Medianoche"></div>
-        <div class="theme-dot" data-t="ciruela"      data-mode="dark"  onclick="setTheme('ciruela')"      title="Ciruela"></div>
-        <div class="theme-dot" data-t="arena-noche"  data-mode="dark"  onclick="setTheme('arena-noche')"  title="Arena nocturna"></div>
-        <div class="theme-dot" data-t="rosa-noche"   data-mode="dark"  onclick="setTheme('rosa-noche')"   title="Rosa nocturna"></div>
-        <div class="theme-dot" data-t="carbon"       data-mode="dark"  onclick="setTheme('carbon')"       title="Carbón"></div>
+        <div class="theme-dot" data-t="bosque-noche"  data-mode="dark"  onclick="setTheme('bosque-noche')"  title="Bosque nocturno"></div>
+        <div class="theme-dot" data-t="oceano-noche"  data-mode="dark"  onclick="setTheme('oceano-noche')"  title="Océano nocturno"></div>
+        <div class="theme-dot" data-t="medianoche"    data-mode="dark"  onclick="setTheme('medianoche')"    title="Medianoche"></div>
+        <div class="theme-dot" data-t="ciruela"       data-mode="dark"  onclick="setTheme('ciruela')"       title="Ciruela"></div>
+        <div class="theme-dot" data-t="arena-noche"   data-mode="dark"  onclick="setTheme('arena-noche')"   title="Arena nocturna"></div>
+        <div class="theme-dot" data-t="rosa-noche"    data-mode="dark"  onclick="setTheme('rosa-noche')"    title="Rosa nocturna"></div>
+        <div class="theme-dot" data-t="carbon"        data-mode="dark"  onclick="setTheme('carbon')"        title="Carbón"></div>
       </div>
     </div>
   </aside>
@@ -1574,21 +1583,21 @@ let notifT;
 function showNotif(msg){ const el=document.getElementById('notif'); el.textContent=msg; el.classList.add('show'); clearTimeout(notifT); notifT=setTimeout(()=>el.classList.remove('show'),2400); }
 
 // ── THEMES ──
-const DARK_THEMES = new Set(['bosque-noche','medianoche','ciruela','carbon','arena-noche','rosa-noche']);
+const DARK_THEMES = new Set(['bosque-noche','oceano-noche','medianoche','ciruela','carbon','arena-noche','rosa-noche']);
 const LIGHT_TO_DARK = {
-  bosque:'bosque-noche', oceano:'medianoche', lavanda:'ciruela',
+  bosque:'bosque-noche', oceano:'oceano-noche', lavanda:'ciruela',
   arena:'arena-noche', rosa:'rosa-noche', cielo:'medianoche', pizarra:'carbon'
 };
 const DARK_TO_LIGHT = {
-  'bosque-noche':'bosque', medianoche:'cielo', ciruela:'lavanda',
-  'arena-noche':'arena', 'rosa-noche':'rosa', carbon:'pizarra'
+  'bosque-noche':'bosque', 'oceano-noche':'oceano', medianoche:'cielo',
+  ciruela:'lavanda', 'arena-noche':'arena', 'rosa-noche':'rosa', carbon:'pizarra'
 };
 
 const THEME_ACCENTS = {
   bosque:'#3B6B4A', oceano:'#1A5C8A', lavanda:'#5B4FA0',
   arena:'#8A6A2A', rosa:'#9A3A5A', cielo:'#2878B0', pizarra:'#4060A0',
-  carbon:'#4A8CC8', 'bosque-noche':'#5AAA72', medianoche:'#A89FD8',
-  ciruela:'#B080E0', 'arena-noche':'#D4A040', 'rosa-noche':'#E07090'
+  carbon:'#4A8CC8', 'bosque-noche':'#5AAA72', 'oceano-noche':'#4A9ED8',
+  medianoche:'#A89FD8', ciruela:'#B080E0', 'arena-noche':'#D4A040', 'rosa-noche':'#E07090'
 };
 
 function setTheme(name){
@@ -1824,6 +1833,7 @@ function buildSyncHTML(){
         <div onclick="setTheme('cielo')"        data-t="cielo"        data-mode="light" title="Cielo"           style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:#2878B0;border:2.5px solid transparent;transition:all .15s;flex-shrink:0;"></div>
         <div onclick="setTheme('pizarra')"      data-t="pizarra"      data-mode="light" title="Pizarra"         style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:#4060A0;border:2.5px solid transparent;transition:all .15s;flex-shrink:0;"></div>
         <div onclick="setTheme('bosque-noche')" data-t="bosque-noche" data-mode="dark"  title="Bosque nocturno" style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:#5AAA72;border:2.5px solid transparent;transition:all .15s;flex-shrink:0;"></div>
+        <div onclick="setTheme('oceano-noche')" data-t="oceano-noche" data-mode="dark"  title="Océano nocturno" style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:#4A9ED8;border:2.5px solid transparent;transition:all .15s;flex-shrink:0;"></div>
         <div onclick="setTheme('medianoche')"   data-t="medianoche"   data-mode="dark"  title="Medianoche"      style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:#9890D0;border:2.5px solid transparent;transition:all .15s;flex-shrink:0;"></div>
         <div onclick="setTheme('ciruela')"      data-t="ciruela"      data-mode="dark"  title="Ciruela"         style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:#A870D8;border:2.5px solid transparent;transition:all .15s;flex-shrink:0;"></div>
         <div onclick="setTheme('arena-noche')"  data-t="arena-noche"  data-mode="dark"  title="Arena nocturna"  style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:#D4A040;border:2.5px solid transparent;transition:all .15s;flex-shrink:0;"></div>
