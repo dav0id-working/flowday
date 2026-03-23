@@ -25,6 +25,57 @@
   --shadow: 0 2px 12px rgba(0,0,0,0.08);
   --radius: 10px; --radius-sm: 7px;
 }
+
+/* ── THEMES ── */
+[data-theme="bosque"] {
+  --bg:#F4F1EC; --surface:#FEFCF8; --surface2:#EDE9E0; --surface3:#E6E1D6;
+  --border:#DDD8CE; --border2:#C8C2B6; --text:#1C1916; --text2:#5C5750; --text3:#9A9388;
+  --accent:#3B6B4A; --accent-light:#EAF0EC; --accent2:#B85C2A; --accent2-light:#FBF0E8;
+}
+[data-theme="oceano"] {
+  --bg:#EEF4FA; --surface:#F8FBFF; --surface2:#DDE9F5; --surface3:#CDD9EA;
+  --border:#C4D4E8; --border2:#A8BDD6; --text:#0F1E2E; --text2:#2E4A62; --text3:#6B8BA8;
+  --accent:#1A5C8A; --accent-light:#D6E8F5; --accent2:#2A7A7A; --accent2-light:#D5EEEE;
+}
+[data-theme="lavanda"] {
+  --bg:#F2F0F7; --surface:#FAFAFE; --surface2:#E5E2F0; --surface3:#D8D4EA;
+  --border:#CCC8E2; --border2:#B0AACF; --text:#1A1626; --text2:#443D60; --text3:#8880A8;
+  --accent:#5B4FA0; --accent-light:#E8E5F8; --accent2:#7A4A8A; --accent2-light:#EBE0F2;
+}
+[data-theme="carbon"] {
+  --bg:#1A1A1E; --surface:#24242A; --surface2:#2E2E36; --surface3:#383842;
+  --border:#44444E; --border2:#55555F; --text:#E8E6F0; --text2:#B0AEBE; --text3:#70707E;
+  --accent:#7C9FD4; --accent-light:#1E2A3A; --accent2:#D49A7C; --accent2-light:#3A2A1E;
+  --urgent-light:#3A1E1E; --warn-light:#3A2E1A; --done-color:#55555F;
+}
+[data-theme="arena"] {
+  --bg:#F5EFE0; --surface:#FDF9F0; --surface2:#EDE4D0; --surface3:#E2D6BE;
+  --border:#D4C9B0; --border2:#BFB298; --text:#2A2010; --text2:#5C4E38; --text3:#9A8E78;
+  --accent:#8A6A2A; --accent-light:#F0E6CC; --accent2:#8A4A2A; --accent2-light:#F0DDD0;
+}
+[data-theme="rosa"] {
+  --bg:#F7F0F4; --surface:#FEF8FB; --surface2:#EDE0E8; --surface3:#E2D0D8;
+  --border:#D8C4CE; --border2:#C0A8B8; --text:#2A1020; --text2:#5C3848; --text3:#9A7888;
+  --accent:#9A3A5A; --accent-light:#F5E0E8; --accent2:#6A3A7A; --accent2-light:#EDE0F5;
+}
+
+/* ── THEME SELECTOR ── */
+.theme-selector { padding: 10px 14px 14px; border-top: 1px solid var(--border); }
+.theme-selector-label { font-size: 9.5px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: block; }
+.theme-dots { display: flex; gap: 8px; flex-wrap: wrap; }
+.theme-dot {
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  border: 2.5px solid transparent; transition: transform .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.theme-dot:hover { transform: scale(1.15); }
+.theme-dot.active { border-color: var(--text2); transform: scale(1.1); }
+.theme-dot[data-t="bosque"]  { background: #3B6B4A; }
+.theme-dot[data-t="oceano"]  { background: #1A5C8A; }
+.theme-dot[data-t="lavanda"] { background: #5B4FA0; }
+.theme-dot[data-t="carbon"]  { background: #7C9FD4; border: 2.5px solid #44444E; }
+.theme-dot[data-t="arena"]   { background: #8A6A2A; }
+.theme-dot[data-t="rosa"]    { background: #9A3A5A; }
 html,body { height:100%; background:var(--bg); color:var(--text); font-family:'Nunito',sans-serif; font-size:14.5px; line-height:1.55; }
 .app { display:flex; height:100vh; overflow:hidden; }
 
@@ -564,6 +615,17 @@ body.is-mobile .date-popup {
       <span class="user-email" id="userEmail"></span>
       <button class="logout-btn" onclick="doLogout()">Salir</button>
     </div>
+    <div class="theme-selector">
+      <span class="theme-selector-label">Tema</span>
+      <div class="theme-dots" id="themeDots">
+        <div class="theme-dot active" data-t="bosque"  onclick="setTheme('bosque')"  title="Bosque"></div>
+        <div class="theme-dot" data-t="oceano"  onclick="setTheme('oceano')"  title="Océano"></div>
+        <div class="theme-dot" data-t="lavanda" onclick="setTheme('lavanda')" title="Lavanda"></div>
+        <div class="theme-dot" data-t="carbon"  onclick="setTheme('carbon')"  title="Carbón"></div>
+        <div class="theme-dot" data-t="arena"   onclick="setTheme('arena')"   title="Arena"></div>
+        <div class="theme-dot" data-t="rosa"    onclick="setTheme('rosa')"    title="Rosa"></div>
+      </div>
+    </div>
   </aside>
 
   <main class="main">
@@ -845,6 +907,7 @@ function formatShort(dk){
   if(dk===today) return 'Hoy'; if(dk===yk) return 'Ayer';
   const dt=pDate(dk); return `${dt.getDate()} ${M3[dt.getMonth()]}`;
 }
+function formatDateShortFull(dk){ const dt=pDate(dk); return `${dt.getDate()} ${M3[dt.getMonth()]}`; }
 function formatWD(dk){ return D7[pDate(dk).getDay()]; }
 function dueDiff(dk){ const n=new Date(); n.setHours(0,0,0,0); return Math.floor((pDate(dk)-n)/86400000); }
 function dueCls(dk){ const d=dueDiff(dk); return d<0?'overdue':d<=3?'soon':'ok'; }
@@ -901,7 +964,7 @@ function renderSidebar(){
     const el = document.createElement('div');
     el.className='day-item'+(dk===state.activeDayId?' active':'');
     el.style.flex='1';
-    el.innerHTML=`<span class="day-name">${formatShort(dk)}</span>${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}`;
+    el.innerHTML=`<span class="day-name">${dk===today ? `Hoy — ${formatDateShortFull(dk)}` : formatShort(dk)}</span>${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}`;
     el.onclick=()=>activateDay(dk);
 
     wrap.appendChild(el);
@@ -1446,6 +1509,30 @@ document.addEventListener('click',e=>{
 let notifT;
 function showNotif(msg){ const el=document.getElementById('notif'); el.textContent=msg; el.classList.add('show'); clearTimeout(notifT); notifT=setTimeout(()=>el.classList.remove('show'),2400); }
 
+// ── THEMES ──
+const THEME_ACCENTS = {
+  bosque:'#3B6B4A', oceano:'#1A5C8A', lavanda:'#5B4FA0',
+  carbon:'#7C9FD4', arena:'#8A6A2A', rosa:'#9A3A5A'
+};
+
+function setTheme(name){
+  document.documentElement.setAttribute('data-theme', name);
+  localStorage.setItem('flowynote_theme', name);
+  // Update desktop dots
+  document.querySelectorAll('.theme-dot').forEach(d=>{
+    d.classList.toggle('active', d.dataset.t === name);
+  });
+  // Update favicon color
+  const color = encodeURIComponent(THEME_ACCENTS[name] || '#3B6B4A');
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='${color}'/><text x='50' y='44' font-family='Georgia,serif' font-size='38' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'>F</text><text x='50' y='76' font-family='Georgia,serif' font-size='28' font-weight='700' fill='white' opacity='.65' text-anchor='middle' dominant-baseline='middle'>N</text></svg>`;
+  document.querySelector('link[rel="icon"]')?.setAttribute('href', `data:image/svg+xml,${svg}`);
+}
+
+function loadTheme(){
+  const saved = localStorage.getItem('flowynote_theme') || 'bosque';
+  setTheme(saved);
+}
+
 // ── MOBILE DETECTION (JS-based, not CSS) ──
 function detectMobile(){
   const w = window.innerWidth;
@@ -1494,7 +1581,7 @@ function mobShow(view){
         const hasContent = day.blocks.length > 0;
         return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
           <div class="day-item${dk===state.activeDayId?' active':''}" style="flex:1;padding:10px 12px;" onclick="activateDay('${dk}')">
-            <span class="day-name">${formatShort(dk)}${dk===today?' — Hoy':''}</span>
+            <span class="day-name">${dk===today ? `Hoy — ${formatDateShortFull(dk)}` : formatShort(dk)}</span>
             ${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}
           </div>
           ${dk !== today ? `<button onclick="deleteDayFromDrawer('${dk}',${hasContent})" style="flex-shrink:0;width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:none;cursor:pointer;font-size:14px;color:var(--text3);display:flex;align-items:center;justify-content:center;">✕</button>` : ''}
@@ -1621,6 +1708,14 @@ function buildSyncHTML(){
       <span style="color:var(--warn);">⚠️ Importar reemplaza todos los datos actuales.</span>
     </div>
     <div class="sync-last">Último export: ${lastExport}</div>
+    <div class="sync-divider"></div>
+    <div style="margin-top:4px;">
+      <div style="font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Tema de color</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        ${['bosque','oceano','lavanda','carbon','arena','rosa'].map(t=>`
+          <div onclick="setTheme('${t}')" title="${t}" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:${{bosque:'#3B6B4A',oceano:'#1A5C8A',lavanda:'#5B4FA0',carbon:'#7C9FD4',arena:'#8A6A2A',rosa:'#9A3A5A'}[t]};border:3px solid ${localStorage.getItem('flowynote_theme')===t?'var(--text2)':'transparent'};transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
+      </div>
+    </div>
   </div>`;
 }
 
@@ -1939,6 +2034,7 @@ async function initApp(){
 }
 
 // ── INIT ──
+loadTheme();
 detectMobile(); // run before showing anything
 loadSession();
 if(session && session.access_token){
