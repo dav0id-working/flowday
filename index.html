@@ -58,24 +58,45 @@
   --border:#D8C4CE; --border2:#C0A8B8; --text:#2A1020; --text2:#5C3848; --text3:#9A7888;
   --accent:#9A3A5A; --accent-light:#F5E0E8; --accent2:#6A3A7A; --accent2-light:#EDE0F5;
 }
+/* ── DARK THEMES ── */
+[data-theme="bosque-noche"] {
+  --bg:#0E1612; --surface:#162018; --surface2:#1E2E20; --surface3:#263828;
+  --border:#2E4230; --border2:#3A5438; --text:#D4ECD8; --text2:#8EBE96; --text3:#5A846A;
+  --accent:#5AAA72; --accent-light:#0E2018; --accent2:#C8784A; --accent2-light:#2A1A10;
+  --urgent-light:#2A1010; --warn-light:#2A2010; --done-color:#3A5438;
+}
+[data-theme="medianoche"] {
+  --bg:#0A0A0C; --surface:#121216; --surface2:#1A1A20; --surface3:#22222A;
+  --border:#2A2A34; --border2:#38384A; --text:#F0EEF8; --text2:#A8A6C0; --text3:#606080;
+  --accent:#A89FD8; --accent-light:#181828; --accent2:#D4A060; --accent2-light:#281E10;
+  --urgent-light:#281010; --warn-light:#28200A; --done-color:#38384A;
+}
+[data-theme="ciruela"] {
+  --bg:#120E18; --surface:#1A1422; --surface2:#241A30; --surface3:#2E2038;
+  --border:#3A2A4A; --border2:#4A3A5C; --text:#EAE0F8; --text2:#A890D0; --text3:#6A5888;
+  --accent:#B080E0; --accent-light:#1E1030; --accent2:#E07898; --accent2-light:#2A1020;
+  --urgent-light:#280818; --warn-light:#281408; --done-color:#4A3A5C;
+}
 
 /* ── THEME SELECTOR ── */
 .theme-selector { padding: 10px 14px 14px; border-top: 1px solid var(--border); }
-.theme-selector-label { font-size: 9.5px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: block; }
-.theme-dots { display: flex; gap: 8px; flex-wrap: wrap; }
-.theme-dot {
-  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
-  border: 2.5px solid transparent; transition: transform .15s, border-color .15s;
-  flex-shrink: 0;
-}
-.theme-dot:hover { transform: scale(1.15); }
-.theme-dot.active { border-color: var(--text2); transform: scale(1.1); }
-.theme-dot[data-t="bosque"]  { background: #3B6B4A; }
-.theme-dot[data-t="oceano"]  { background: #1A5C8A; }
-.theme-dot[data-t="lavanda"] { background: #5B4FA0; }
-.theme-dot[data-t="carbon"]  { background: #7C9FD4; border: 2.5px solid #44444E; }
-.theme-dot[data-t="arena"]   { background: #8A6A2A; }
-.theme-dot[data-t="rosa"]    { background: #9A3A5A; }
+.theme-selector-label { font-size: 9.5px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.dark-toggle { background: none; border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; cursor: pointer; font-size: 11px; color: var(--text2); font-family: 'Nunito', sans-serif; transition: all .13s; }
+.dark-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.theme-dots { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+.theme-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2.5px solid transparent; transition: transform .15s, border-color .15s; flex-shrink: 0; }
+.theme-dot:hover { transform: scale(1.2); }
+.theme-dot.active { border-color: var(--text2); transform: scale(1.15); }
+.theme-dot[data-t="bosque"]       { background: #3B6B4A; }
+.theme-dot[data-t="oceano"]       { background: #1A5C8A; }
+.theme-dot[data-t="lavanda"]      { background: #5B4FA0; }
+.theme-dot[data-t="carbon"]       { background: #7C9FD4; box-shadow: inset 0 0 0 3px #1A1A1E; }
+.theme-dot[data-t="arena"]        { background: #8A6A2A; }
+.theme-dot[data-t="rosa"]         { background: #9A3A5A; }
+.theme-dot[data-t="bosque-noche"] { background: linear-gradient(135deg,#0E1612 50%,#5AAA72 50%); }
+.theme-dot[data-t="medianoche"]   { background: linear-gradient(135deg,#0A0A0C 50%,#A89FD8 50%); }
+.theme-dot[data-t="ciruela"]      { background: linear-gradient(135deg,#120E18 50%,#B080E0 50%); }
+.theme-sep { width:1px; height:16px; background:var(--border); flex-shrink:0; margin: 0 2px; }
 html,body { height:100%; background:var(--bg); color:var(--text); font-family:'Nunito',sans-serif; font-size:14.5px; line-height:1.55; }
 .app { display:flex; height:100vh; overflow:hidden; }
 
@@ -616,14 +637,21 @@ body.is-mobile .date-popup {
       <button class="logout-btn" onclick="doLogout()">Salir</button>
     </div>
     <div class="theme-selector">
-      <span class="theme-selector-label">Tema</span>
+      <div class="theme-selector-label">
+        <span>Tema</span>
+        <button class="dark-toggle" id="darkToggleBtn" onclick="toggleDarkMode()">🌙 Oscuro</button>
+      </div>
       <div class="theme-dots" id="themeDots">
         <div class="theme-dot active" data-t="bosque"  onclick="setTheme('bosque')"  title="Bosque"></div>
-        <div class="theme-dot" data-t="oceano"  onclick="setTheme('oceano')"  title="Océano"></div>
-        <div class="theme-dot" data-t="lavanda" onclick="setTheme('lavanda')" title="Lavanda"></div>
-        <div class="theme-dot" data-t="carbon"  onclick="setTheme('carbon')"  title="Carbón"></div>
-        <div class="theme-dot" data-t="arena"   onclick="setTheme('arena')"   title="Arena"></div>
-        <div class="theme-dot" data-t="rosa"    onclick="setTheme('rosa')"    title="Rosa"></div>
+        <div class="theme-dot" data-t="oceano"         onclick="setTheme('oceano')"  title="Océano"></div>
+        <div class="theme-dot" data-t="lavanda"        onclick="setTheme('lavanda')" title="Lavanda"></div>
+        <div class="theme-dot" data-t="arena"          onclick="setTheme('arena')"   title="Arena"></div>
+        <div class="theme-dot" data-t="rosa"           onclick="setTheme('rosa')"    title="Rosa"></div>
+        <div class="theme-sep"></div>
+        <div class="theme-dot" data-t="bosque-noche"   onclick="setTheme('bosque-noche')"  title="Bosque nocturno"></div>
+        <div class="theme-dot" data-t="medianoche"     onclick="setTheme('medianoche')"     title="Medianoche"></div>
+        <div class="theme-dot" data-t="ciruela"        onclick="setTheme('ciruela')"        title="Ciruela"></div>
+        <div class="theme-dot" data-t="carbon"         onclick="setTheme('carbon')"         title="Carbón"></div>
       </div>
     </div>
   </aside>
@@ -1510,22 +1538,40 @@ let notifT;
 function showNotif(msg){ const el=document.getElementById('notif'); el.textContent=msg; el.classList.add('show'); clearTimeout(notifT); notifT=setTimeout(()=>el.classList.remove('show'),2400); }
 
 // ── THEMES ──
+const DARK_THEMES = new Set(['bosque-noche','medianoche','ciruela','carbon']);
+const LIGHT_TO_DARK = { bosque:'bosque-noche', oceano:'medianoche', lavanda:'ciruela', arena:'bosque-noche', rosa:'ciruela', carbon:'carbon' };
+const DARK_TO_LIGHT = { 'bosque-noche':'bosque', medianoche:'oceano', ciruela:'lavanda', carbon:'lavanda' };
+
 const THEME_ACCENTS = {
   bosque:'#3B6B4A', oceano:'#1A5C8A', lavanda:'#5B4FA0',
-  carbon:'#7C9FD4', arena:'#8A6A2A', rosa:'#9A3A5A'
+  carbon:'#7C9FD4', arena:'#8A6A2A', rosa:'#9A3A5A',
+  'bosque-noche':'#5AAA72', medianoche:'#A89FD8', ciruela:'#B080E0'
 };
 
 function setTheme(name){
   document.documentElement.setAttribute('data-theme', name);
   localStorage.setItem('flowynote_theme', name);
-  // Update desktop dots
+  // Update dots
   document.querySelectorAll('.theme-dot').forEach(d=>{
     d.classList.toggle('active', d.dataset.t === name);
   });
-  // Update favicon color
+  // Update dark toggle button
+  const btn = document.getElementById('darkToggleBtn');
+  if(btn){
+    const isDark = DARK_THEMES.has(name);
+    btn.textContent = isDark ? '☀️ Claro' : '🌙 Oscuro';
+  }
+  // Update favicon
   const color = encodeURIComponent(THEME_ACCENTS[name] || '#3B6B4A');
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='${color}'/><text x='50' y='44' font-family='Georgia,serif' font-size='38' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'>F</text><text x='50' y='76' font-family='Georgia,serif' font-size='28' font-weight='700' fill='white' opacity='.65' text-anchor='middle' dominant-baseline='middle'>N</text></svg>`;
   document.querySelector('link[rel="icon"]')?.setAttribute('href', `data:image/svg+xml,${svg}`);
+}
+
+function toggleDarkMode(){
+  const cur = localStorage.getItem('flowynote_theme') || 'bosque';
+  const isDark = DARK_THEMES.has(cur);
+  const next = isDark ? (DARK_TO_LIGHT[cur] || 'bosque') : (LIGHT_TO_DARK[cur] || 'bosque-noche');
+  setTheme(next);
 }
 
 function loadTheme(){
@@ -1710,10 +1756,14 @@ function buildSyncHTML(){
     <div class="sync-last">Último export: ${lastExport}</div>
     <div class="sync-divider"></div>
     <div style="margin-top:4px;">
-      <div style="font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Tema de color</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        ${['bosque','oceano','lavanda','carbon','arena','rosa'].map(t=>`
-          <div onclick="setTheme('${t}')" title="${t}" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:${{bosque:'#3B6B4A',oceano:'#1A5C8A',lavanda:'#5B4FA0',carbon:'#7C9FD4',arena:'#8A6A2A',rosa:'#9A3A5A'}[t]};border:3px solid ${localStorage.getItem('flowynote_theme')===t?'var(--text2)':'transparent'};transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
+      <div style="font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+        <span>Tema de color</span>
+        <button onclick="toggleDarkMode()" style="background:none;border:1px solid var(--border);border-radius:20px;padding:2px 8px;cursor:pointer;font-size:11px;color:var(--text2);font-family:'Nunito',sans-serif;">${DARK_THEMES.has(localStorage.getItem('flowynote_theme')||'bosque')?'☀️ Claro':'🌙 Oscuro'}</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        ${['bosque','oceano','lavanda','arena','rosa'].map(t=>`<div onclick="setTheme('${t}')" title="${t}" style="width:24px;height:24px;border-radius:50%;cursor:pointer;background:${{bosque:'#3B6B4A',oceano:'#1A5C8A',lavanda:'#5B4FA0',arena:'#8A6A2A',rosa:'#9A3A5A'}[t]};border:2.5px solid ${(localStorage.getItem('flowynote_theme')||'bosque')===t?'var(--text2)':'transparent'};transition:transform .15s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
+        <div style="width:1px;height:16px;background:var(--border);"></div>
+        ${[['bosque-noche','linear-gradient(135deg,#0E1612 50%,#5AAA72 50%)'],['medianoche','linear-gradient(135deg,#0A0A0C 50%,#A89FD8 50%)'],['ciruela','linear-gradient(135deg,#120E18 50%,#B080E0 50%)'],['carbon','linear-gradient(135deg,#1A1A1E 50%,#7C9FD4 50%)']].map(([t,bg])=>`<div onclick="setTheme('${t}')" title="${t}" style="width:24px;height:24px;border-radius:50%;cursor:pointer;background:${bg};border:2.5px solid ${(localStorage.getItem('flowynote_theme')||'bosque')===t?'var(--text2)':'transparent'};transition:transform .15s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
       </div>
     </div>
   </div>`;
@@ -2009,6 +2059,21 @@ async function doLogout(){
   document.querySelector('.mob-bar').style.display = 'none';
 }
 
+// ── PURGE EMPTY DAYS ──
+function purgeEmptyDays(){
+  const today = todayKey();
+  let removed = 0;
+  Object.keys(state.days).forEach(dk => {
+    if(dk >= today) return; // keep today and future
+    const day = state.days[dk];
+    if(!day.blocks || day.blocks.length === 0){
+      delete state.days[dk];
+      removed++;
+    }
+  });
+  if(removed > 0) scheduleSave();
+}
+
 async function initApp(){
   detectMobile();
   // Hide login, show app
@@ -2026,7 +2091,11 @@ async function initApp(){
   }
   if(!Object.keys(state.days).length){ createNewDay(todayKey()); }
   else {
-    if(!state.activeDayId) state.activeDayId=Object.keys(state.days).sort((a,b)=>b.localeCompare(a))[0];
+    purgeEmptyDays(); // remove empty days from past
+    if(!state.activeDayId || !state.days[state.activeDayId]){
+      state.activeDayId = Object.keys(state.days).sort((a,b)=>b.localeCompare(a))[0];
+    }
+    if(!state.activeDayId){ createNewDay(todayKey()); return; }
     const[y,m]=state.activeDayId.split('-').map(Number); calYear=y; calMonth=m-1;
     renderAll();
   }
