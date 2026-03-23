@@ -1728,6 +1728,8 @@ function mobShow(view){
 
   if(view === 'sync'){
     content.innerHTML = buildSyncHTML();
+    // Apply current theme state to the freshly built dots
+    setTimeout(()=> setTheme(localStorage.getItem('flowynote_theme') || 'bosque'), 0);
   }
 
   overlay.classList.add('show');
