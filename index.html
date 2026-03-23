@@ -380,22 +380,7 @@ body.is-mobile .del-block-btn { position:static; opacity:1; width:16px; height:1
 .mc-day.empty { cursor:default; }
 
 /* ══ MOBILE NAV BAR ══ */
-/* Mobile drawer overlay */
-.mob-drawer-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.35); z-index: 600;
-}
-.mob-drawer-overlay.show { display: block; }
-.mob-drawer {
-  position: fixed; bottom: calc(56px + env(safe-area-inset-bottom)); left: 0; right: 0;
-  background: var(--surface); border-radius: var(--radius) var(--radius) 0 0;
-  border-top: 1px solid var(--border);
-  padding: 16px 16px 8px; z-index: 700;
-  max-height: 65vh; overflow-y: auto;
-  transform: translateY(100%); transition: transform .25s ease;
-}
-.mob-drawer.show { transform: translateY(0); }
-.mob-drawer-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 14px; }
+/* Mobile drawer overlay — see full definition in responsive section below */
 
 /* SYNC PANEL */
 .sync-panel { padding: 6px 0; }
@@ -625,7 +610,7 @@ body.is-mobile .date-popup {
 </nav>
 
 <!-- MOBILE DRAWER (diary list, calendar, sync) -->
-<div class="mob-drawer-overlay" id="mobOverlay" onclick="closeMobDrawer()"></div>
+<div class="mob-drawer-overlay" id="mobOverlay"></div>
 <div class="mob-drawer" id="mobDrawer">
   <div class="mob-drawer-handle"></div>
   <div id="mobDrawerContent"></div>
@@ -1133,8 +1118,8 @@ function setStatus(id,status){
 }
 function toggleType(id){ const b=blockById(id); if(!b)return; updateBlock(id,{type:b.type==='task'?'note':'task',status:'todo'}); renderMain(); showNotif(b.type==='task'?'→ Nota':'→ Tarea'); }
 function toggleCollapse(id){ const b=blockById(id); if(!b)return; updateBlock(id,{collapsed:!b.collapsed}); renderMain(); }
-function addFromToolbar(type){ const blocks=getBlocks(); const nb=makeBlock('',type,0); blocks.push(nb); setBlocks(blocks); renderMain(); setTimeout(()=>{const el=document.querySelector(`[data-id="${nb.id}"]`);if(el)el.focus();},20); }
-function addEnd(){ addFromToolbar('note'); }
+function addFromToolbar(type){ if(drawerClosing) return; const blocks=getBlocks(); const nb=makeBlock('',type,0); blocks.push(nb); setBlocks(blocks); renderMain(); setTimeout(()=>{const el=document.querySelector(`[data-id="${nb.id}"]`);if(el)el.focus();},20); }
+function addEnd(){ if(drawerClosing) return; addFromToolbar('note'); }
 
 // ── COMMENTS ──
 function addComment(id){
@@ -1387,12 +1372,22 @@ function mobShow(view){
   initDrawerSwipe(drawer, overlay);
 }
 
+let drawerClosing = false; // flag to block clicks right after drawer closes
+
 function closeMobDrawer(){
   const drawer  = document.getElementById('mobDrawer');
   const overlay = document.getElementById('mobOverlay');
+  if(!drawer.classList.contains('show')) return;
+
   drawer.classList.remove('show');
   overlay.classList.remove('show');
-  setTimeout(()=>{ if(!drawer.classList.contains('show')) drawer.style.display='none'; }, 300);
+
+  // Block all clicks/taps for 350ms to prevent touch-through to content below
+  drawerClosing = true;
+  setTimeout(()=>{
+    drawerClosing = false;
+    if(!drawer.classList.contains('show')) drawer.style.display = 'none';
+  }, 350);
 }
 
 // Touch swipe to close drawer
@@ -1416,11 +1411,17 @@ function initDrawerSwipe(drawer, overlay){
     drawer.style.transition = '';
     drawer.style.transform = '';
     if(curY > 80) closeMobDrawer();
+    curY = 0;
   }
+
+  // Overlay: prevent ALL events from passing through
+  overlay.addEventListener('touchstart', (e)=>{ e.preventDefault(); e.stopPropagation(); closeMobDrawer(); }, {passive:false});
+  overlay.addEventListener('touchend',   (e)=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false});
+  overlay.addEventListener('click',      (e)=>{ e.preventDefault(); e.stopPropagation(); closeMobDrawer(); });
+
   handle.addEventListener('touchstart', onStart, {passive:true});
-  handle.addEventListener('touchmove', onMove, {passive:true});
-  handle.addEventListener('touchend', onEnd);
-  overlay.addEventListener('touchstart', closeMobDrawer, {passive:true});
+  handle.addEventListener('touchmove',  onMove,  {passive:true});
+  handle.addEventListener('touchend',   onEnd);
 }
 
 // ── SYNC / EXPORT / IMPORT ──
