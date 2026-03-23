@@ -379,20 +379,7 @@ body.is-mobile .del-block-btn { position:static; opacity:1; width:16px; height:1
 .mc-day.other-month { color:var(--text3); opacity:.45; }
 .mc-day.empty { cursor:default; }
 
-/* Day delete button in sidebar */
-.day-del-btn {
-  display: none; background: none; border: 1.5px solid var(--border);
-  border-radius: 4px; width: 18px; height: 18px;
-  align-items: center; justify-content: center; cursor: pointer;
-  font-size: 12px; color: var(--text3); flex-shrink: 0;
-  padding: 0; line-height: 1; transition: all .13s;
-}
-.day-item:hover .day-del-btn { display: flex; }
-.day-del-btn:hover { color: var(--urgent); border-color: var(--urgent); background: var(--urgent-light); }
-
-/* ══ MOBILE NAV BAR — first declaration removed, canonical one below ══ */
-.mob-bar-first-placeholder {
-
+/* ══ MOBILE NAV BAR ══ */
 /* Mobile drawer overlay */
 .mob-drawer-overlay {
   display: none; position: fixed; inset: 0;
@@ -469,34 +456,28 @@ body.is-mobile .notif { right: 12px; font-size: 13px; }
   z-index: 800;
   align-items: stretch; justify-content: space-around;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -2px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
 }
 body.is-mobile .mob-bar { display: flex; }
 body:not(.is-mobile) .mob-bar { display: none !important; }
 
 .mob-bar-btn {
-  flex: 1; min-height: 56px; border: none; background: none;
+  flex: 1; min-height: 54px; border: none; background: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 3px; cursor: pointer; color: var(--text3);
   font-size: 10.5px; font-family: 'Nunito', sans-serif; font-weight: 500;
-  transition: color .15s; -webkit-tap-highlight-color: transparent;
-  padding: 8px 4px; position: relative;
+  transition: color .15s, background .15s; -webkit-tap-highlight-color: transparent;
+  padding: 8px 4px; border-radius: 0; position: relative;
 }
-.mob-bar-btn::before {
-  content: '';
-  position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
-  width: 0; height: 3px; border-radius: 2px;
-  background: var(--accent); transition: width .2s cubic-bezier(.4,0,.2,1);
-}
-.mob-bar-btn.active::before { width: 28px; }
-.mob-icon {
-  font-size: 20px; line-height: 1; display: block;
-  transition: transform .2s cubic-bezier(.4,0,.2,1);
-}
+.mob-bar-btn:active { background: var(--surface2); }
+.mob-icon { font-size: 20px; line-height: 1; display: block; margin-bottom: 1px; }
 .mob-bar-btn.active { color: var(--accent); }
-.mob-bar-btn.active .mob-icon { transform: scale(1.15) translateY(-1px); }
-.mob-bar-btn:active { opacity: 0.7; }
-
+.mob-bar-btn.active::after {
+  content: '';
+  position: absolute; top: 0; left: 20%; right: 20%;
+  height: 2.5px; background: var(--accent); border-radius: 0 0 3px 3px;
+}
+.mob-bar-btn.active .mob-icon { transform: scale(1.08); }
 
 /* ══ MOBILE DRAWER ══ */
 .mob-drawer-overlay {
@@ -631,15 +612,15 @@ body.is-mobile .date-popup {
 <nav class="mob-bar">
   <button class="mob-bar-btn" id="mobBtnDiary" onclick="mobShow('diary')">
     <span class="mob-icon">☰</span>
-    Diario
+    <span>Diario</span>
   </button>
   <button class="mob-bar-btn" id="mobBtnCal" onclick="mobShow('cal')">
     <span class="mob-icon">📆</span>
-    Calendario
+    <span>Calendario</span>
   </button>
   <button class="mob-bar-btn" id="mobBtnSync" onclick="mobShow('sync')">
     <span class="mob-icon">↺</span>
-    Sincronizar
+    <span>Sincronizar</span>
   </button>
 </nav>
 
@@ -768,16 +749,8 @@ let saveTimeout = null;
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 function todayKey(){
-  // Always use Chilean time (America/Santiago) — handles DST automatically
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Santiago',
-    year: 'numeric', month: '2-digit', day: '2-digit'
-  }).formatToParts(now);
-  const y = parts.find(p=>p.type==='year').value;
-  const m = parts.find(p=>p.type==='month').value;
-  const d = parts.find(p=>p.type==='day').value;
-  return `${y}-${m}-${d}`;
+  // Always use Chile time (America/Santiago) — handles daylight saving automatically
+  return new Date().toLocaleDateString('en-CA', {timeZone:'America/Santiago'});
 }
 
 function makeBlock(text='',type='note',level=0){
@@ -839,19 +812,6 @@ function showSyncIndicator(msg){
 }
 
 // ── DAYS ──
-function deleteDay(dk){
-  const dayKeys = Object.keys(state.days);
-  if(dayKeys.length <= 1){ showNotif('No puedes borrar el único día'); return; }
-  const label = formatLong(dk);
-  if(!confirm(`¿Eliminar el día "${label}" y todos sus bloques?\n\nEsta acción no se puede deshacer.`)) return;
-  delete state.days[dk];
-  if(state.activeDayId === dk){
-    const remaining = Object.keys(state.days).sort((a,b)=>b.localeCompare(a));
-    state.activeDayId = remaining[0] || null;
-  }
-  scheduleSave(); renderAll(); showNotif('🗑 Día eliminado');
-}
-
 function createNewDay(dk){
   if(!dk) dk=todayKey();
   if(!state.days[dk]) state.days[dk]=makeDay(dk);
@@ -863,7 +823,7 @@ function activateDay(dk){
   // Sync calendar to show this month
   const[y,m]=dk.split('-').map(Number);
   calYear=y; calMonth=m-1;
-  scheduleSave(); renderAll();
+  save(); renderAll();
 }
 
 // ── FORMAT ──
@@ -874,10 +834,8 @@ function pDate(dk){ const[y,m,d]=dk.split('-').map(Number); return new Date(y,m-
 function formatLong(dk){ const dt=pDate(dk); return `${dt.getDate()} de ${MO[dt.getMonth()]}, ${dt.getFullYear()}`; }
 function formatShort(dk){
   const today=todayKey();
-  // Compute yesterday in Chile time
-  const nowCL = new Date(new Date().toLocaleString('en-US', {timeZone:'America/Santiago'}));
-  nowCL.setDate(nowCL.getDate()-1);
-  const yk = `${nowCL.getFullYear()}-${String(nowCL.getMonth()+1).padStart(2,'0')}-${String(nowCL.getDate()).padStart(2,'0')}`;
+  const yDate = new Date(); yDate.setDate(yDate.getDate()-1);
+  const yk = yDate.toLocaleDateString('en-CA', {timeZone:'America/Santiago'});
   if(dk===today) return 'Hoy'; if(dk===yk) return 'Ayer';
   const dt=pDate(dk); return `${dt.getDate()} ${M3[dt.getMonth()]}`;
 }
@@ -917,7 +875,7 @@ function rolloverAll(){
     const fd=state.days[p.fromDate]; if(fd) fd.blocks=fd.blocks.filter(b=>b.id!==p.id);
     state.days[tk].blocks.push({...p,id:uid(),level:0,status:p.status||'todo'});
   });
-  scheduleSave(); renderAll(); showNotif(`${pending.length} tarea${pending.length>1?'s':''} movidas a hoy`);
+  save(); renderAll(); showNotif(`${pending.length} tarea${pending.length>1?'s':''} movidas a hoy`);
 }
 
 // ── RENDER ──
@@ -931,8 +889,8 @@ function renderSidebar(){
     const day=state.days[dk]; const tasks=day.blocks.filter(b=>b.type==='task'); const pend=tasks.filter(b=>b.status==='todo'||b.status==='progress').length;
     const el=document.createElement('div');
     el.className='day-item'+(dk===state.activeDayId?' active':'');
-    el.innerHTML=`<span class="day-name" onclick="activateDay('${dk}')" style="flex:1;cursor:pointer;">${formatShort(dk)}</span>${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}<button class="day-del-btn" title="Eliminar día" onclick="deleteDay('${dk}')">×</button>`;
-    list.appendChild(el);
+    el.innerHTML=`<span class="day-name">${formatShort(dk)}</span>${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}`;
+    el.onclick=()=>activateDay(dk); list.appendChild(el);
   });
 }
 
@@ -952,7 +910,15 @@ function renderMain(){
   const statsHTML=blocks.length?`<div class="stats-bar"><div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>${tasks.filter(b=>b.status==='done').length}/${tasks.length} tareas</div><div class="stat"><div class="stat-dot" style="background:var(--warn)"></div>${tasks.filter(b=>b.status==='progress').length} en progreso</div><div class="stat"><div class="stat-dot" style="background:var(--border2)"></div>${blocks.filter(b=>b.type==='note').length} notas</div></div>`:'';
 
   mc.innerHTML=`
-    <div class="day-header"><div class="day-date">${formatLong(day.date)}</div><div class="day-meta">${formatWD(day.date)}</div></div>
+    <div class="day-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div>
+          <div class="day-date">${formatLong(day.date)}</div>
+          <div class="day-meta">${formatWD(day.date)}</div>
+        </div>
+        ${day.date !== todayKey() ? `<button onclick="deleteDay('${day.date}')" title="Eliminar este día" style="margin-top:6px;flex-shrink:0;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--text3);font-family:'Nunito',sans-serif;transition:all .13s;" onmouseover="this.style.borderColor='var(--urgent)';this.style.color='var(--urgent)';this.style.background='var(--urgent-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)';this.style.background='none'">✕ Eliminar día</button>` : ''}
+      </div>
+    </div>
     ${rollHTML}
     <div class="toolbar">
       <button class="tb-btn" onclick="addFromToolbar('note')" title="Nota (bullet)">
@@ -1344,10 +1310,9 @@ function mobShow(view){
       ${sorted.map(dk=>{
         const day=state.days[dk]; const tasks=day.blocks.filter(b=>b.type==='task');
         const pend=tasks.filter(b=>b.status==='todo'||b.status==='progress').length;
-        return `<div class="day-item${dk===state.activeDayId?' active':''}" style="padding:10px 12px;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-          <span class="day-name" style="flex:1;cursor:pointer;" onclick="activateDay('${dk}');closeMobDrawer();">${formatShort(dk)}${dk===today?' — Hoy':''}</span>
+        return `<div class="day-item${dk===state.activeDayId?' active':''}" style="padding:10px 12px;margin-bottom:4px;" onclick="activateDay('${dk}');closeMobDrawer();">
+          <span class="day-name">${formatShort(dk)}${dk===today?' — Hoy':''}</span>
           ${tasks.length?`<span class="day-badge${pend===0?' clear':''}">${pend>0?pend:'✓'}</span>`:''}
-          <button style="background:none;border:1.5px solid var(--border);border-radius:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--text3);flex-shrink:0;padding:0;line-height:1;" onclick="deleteDay('${dk}');mobShow('diary');" title="Eliminar día">×</button>
         </div>`;
       }).join('')}
       <div class="new-day-btn" style="margin:12px 0 0;" onclick="createNewDay();closeMobDrawer();">＋ Nuevo día</div>`;
@@ -1485,7 +1450,7 @@ function doImport(input){
       if(!imported.days) throw new Error('Formato inválido');
       if(!confirm(`¿Reemplazar todos tus datos con los del archivo "${file.name}"?\n\nEsta acción no se puede deshacer.`)) return;
       state = imported;
-      scheduleSave(); renderAll();
+      save(); renderAll();
       showNotif('✓ Datos importados correctamente');
       closeMobDrawer();
     } catch(err) {
@@ -1537,7 +1502,7 @@ function renderCalendarInto(elId){
     let cls = 'mc-day';
     if(isToday) cls+=' today'; else if(isActive) cls+=' active';
     if(hasEntry) cls+=' has-entries';
-    cells += `<div class="${cls}" onclick="calClickDay('${dk}');closeMobDrawer();">${d}</div>`;
+    cells += `<div class="${cls}" onclick="calClickDay('${dk}')">${d}</div>`;
   }
   el.innerHTML = `
     <div class="mc-header">
@@ -1605,29 +1570,55 @@ function renderCalendar(){
 function calPrev(){
   calMonth--; if(calMonth<0){calMonth=11;calYear--;}
   renderCalendar();
-  const mob = document.getElementById('miniCalMob');
-  if(mob) renderCalendarInto('miniCalMob');
 }
 function calNext(){
   calMonth++; if(calMonth>11){calMonth=0;calYear++;}
   renderCalendar();
-  const mob = document.getElementById('miniCalMob');
-  if(mob) renderCalendarInto('miniCalMob');
 }
 function calClickDay(dk){
-  if(!state.days[dk]) createNewDay(dk);
-  else activateDay(dk);
+  closeMobDrawer();
+  if(state.days[dk]){
+    // Day exists — navigate to it
+    activateDay(dk);
+  } else {
+    // Day doesn't exist — ask before creating
+    if(confirm(`¿Crear una nueva hoja para el ${formatLong(dk)}?`)){
+      createNewDay(dk);
+    }
+  }
   renderCalendar();
+}
+
+function deleteDay(dk){
+  if(!confirm(`¿Eliminar la hoja del ${formatLong(dk)} y todo su contenido?\n\nEsta acción no se puede deshacer.`)) return;
+  delete state.days[dk];
+  // Navigate to today or most recent day
+  const remaining = Object.keys(state.days).sort((a,b)=>b.localeCompare(a));
+  state.activeDayId = remaining.length ? remaining[0] : null;
+  if(!state.activeDayId){
+    const tk = todayKey();
+    state.days[tk] = makeDay(tk);
+    state.activeDayId = tk;
+  }
+  const[y,m] = state.activeDayId.split('-').map(Number);
+  calYear=y; calMonth=m-1;
+  scheduleSave(); renderAll();
+  showNotif('Día eliminado');
 }
 
 function goToToday(){
   const tk = todayKey();
-  const [y,m] = tk.split('-').map(Number);
-  calYear = y; calMonth = m-1;
-  if(!state.days[tk]) createNewDay(tk);
-  else activateDay(tk);
   closeMobDrawer();
-  showNotif('📍 Día de hoy');
+  if(!state.days[tk]){
+    // Create today only if it doesn't exist
+    state.days[tk] = makeDay(tk);
+    scheduleSave();
+  }
+  state.activeDayId = tk;
+  const[y,m] = tk.split('-').map(Number);
+  calYear = y; calMonth = m-1;
+  renderAll();
+  showNotif('📍 Hoy');
 }
 
 // ── LOGIN / AUTH ──
