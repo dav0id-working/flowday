@@ -269,8 +269,23 @@ body.is-mobile .del-block-btn { position:static; opacity:1; width:16px; height:1
 .ra-btn { width:22px; height:22px; border:none; background:none; cursor:pointer; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text3); transition:all .13s; }
 .ra-btn:hover { background:var(--border); color:var(--text2); }
 
-.add-block-hint { padding:8px 0 8px 52px; color:var(--text3); font-size:13px; cursor:pointer; border-radius:var(--radius-sm); display:flex; align-items:center; gap:7px; transition:all .13s; margin-top:6px; }
-.add-block-hint:hover { color:var(--accent); background:var(--accent-light); }
+/* ── PENDING SECTION (replaces add-block-hint) ── */
+.pending-section { margin-top:28px; padding-top:20px; border-top:1px solid var(--border); }
+.ps-main-title { font-family:'Lora',serif; font-size:17px; color:var(--text2); margin-bottom:12px; font-weight:500; }
+.ps-group-title { font-size:9.5px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:8px; margin-top:16px; }
+.ps-group-title:first-of-type { margin-top:0; }
+.ps-group-title.urgent { color:var(--accent2); }
+.ps-group-title.future { color:var(--accent); }
+.ps-item { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:var(--radius-sm); cursor:pointer; transition:background .13s; margin-bottom:3px; }
+.ps-item:hover { background:var(--surface2); }
+.ps-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+.ps-dot.s-todo { background:transparent; border:1.5px solid var(--border2); border-radius:2px; width:9px; height:9px; }
+.ps-dot.s-progress { background:var(--warn); border-radius:50%; }
+.ps-dot.s-done { background:var(--accent); }
+.ps-dot.s-cancelled { background:var(--text3); }
+.ps-content { flex:1; min-width:0; }
+.ps-text { font-size:13.5px; color:var(--text2); line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ps-date { font-size:11px; color:var(--text3); font-family:'JetBrains Mono',monospace; margin-top:2px; }
 .stats-bar { display:flex; gap:18px; margin-top:28px; padding-top:18px; border-top:1px solid var(--border); }
 .stat { display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--text3); font-family:'JetBrains Mono',monospace; }
 .stat-dot { width:6px; height:6px; border-radius:50%; }
@@ -948,9 +963,66 @@ function renderMain(){
       ${blocks.length===0?'<div class="empty-write-hint" onclick="addEnd()" onkeydown="if(event.key===\'Enter\')addEnd()">Empieza a escribir… <span class="ewh-hint">↵ para comenzar</span></div>':''}
       ${renderBlocks(blocks)}
     </div>
-    <div class="add-block-hint" onclick="addEnd()">＋ Agregar bloque</div>
-    ${statsHTML}`;
+    ${statsHTML}
+    ${renderPendingSection()}`;
   setTimeout(()=>document.querySelectorAll('.block-text').forEach(autoH), 0);
+}
+
+function renderPendingSection(){
+  const today = todayKey();
+  const overdue = []; // past due date OR tasks without date from past days
+  const future  = []; // tasks with future due date OR tasks from today without date
+
+  Object.entries(state.days)
+    .sort(([a],[b]) => a.localeCompare(b))
+    .forEach(([dk, day]) => {
+      day.blocks.forEach(b => {
+        if(b.type !== 'task') return;
+        if(b.status === 'done' || b.status === 'cancelled') return;
+        const text = b.text && b.text.trim() ? b.text.trim() : null;
+        if(!text) return; // skip empty tasks
+
+        if(b.dueDate) {
+          if(b.dueDate < today) overdue.push({...b, dayKey:dk, label: b.dueDate});
+          else future.push({...b, dayKey:dk, label: b.dueDate});
+        } else {
+          // No due date — group by day date
+          if(dk < today) overdue.push({...b, dayKey:dk, label: dk});
+          else future.push({...b, dayKey:dk, label: dk});
+        }
+      });
+    });
+
+  // Sort each group
+  overdue.sort((a,b) => a.label.localeCompare(b.label));
+  future.sort((a,b) => a.label.localeCompare(b.label));
+
+  if(!overdue.length && !future.length) return '';
+
+  const renderItem = (t) => {
+    const dateLabel = t.dueDate
+      ? `📅 ${formatLong(t.dueDate)}`
+      : formatShort(t.dayKey);
+    const statusIcon = {todo:'☐', progress:'◑', done:'✓', cancelled:'✗'}[t.status||'todo'];
+    return `<div class="ps-item" onclick="activateDay('${t.dayKey}')">
+      <div class="ps-dot s-${t.status||'todo'}"></div>
+      <div class="ps-content">
+        <div class="ps-text">${esc(t.text)}</div>
+        <div class="ps-date">${dateLabel}</div>
+      </div>
+    </div>`;
+  };
+
+  return `
+    <div class="pending-section">
+      <div class="ps-main-title">Resumen de tareas</div>
+      ${overdue.length ? `
+        <div class="ps-group-title urgent">⚠ Pendientes y vencidos (${overdue.length})</div>
+        ${overdue.map(renderItem).join('')}` : ''}
+      ${future.length ? `
+        <div class="ps-group-title future">📋 A futuro (${future.length})</div>
+        ${future.map(renderItem).join('')}` : ''}
+    </div>`;
 }
 
 function renderBlocks(blocks){
@@ -1044,7 +1116,83 @@ function renderRightPanel(){
 }
 
 // ── BLOCK INTERACTIONS ──
-function onBlockInput(el){ autoH(el); updateBlock(el.dataset.id,{text:el.value}); renderSidebar(); renderRightPanel(); }
+function onBlockInput(el){
+  autoH(el);
+  updateBlock(el.dataset.id, {text: el.value});
+  renderSidebar(); renderRightPanel();
+  detectDatePattern(el, el.dataset.id);
+}
+
+// Point 2 — Detect DD-MM!! or DD-MM-YYYY!! patterns
+function detectDatePattern(el, blockId){
+  const text = el.value;
+  const match = text.match(/(\d{1,2})-(\d{1,2})(?:-(\d{4}))?!!/);
+  if(!match) return;
+  const day = parseInt(match[1]), month = parseInt(match[2])-1;
+  // Use Chile year
+  const chileYear = parseInt(new Date().toLocaleDateString('en-CA', {timeZone:'America/Santiago'}).split('-')[0]);
+  const year = match[3] ? parseInt(match[3]) : chileYear;
+  const dt = new Date(year, month, day);
+  if(dt.getDate()!==day || dt.getMonth()!==month) return;
+  const dk = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  const b = blockById(blockId);
+  if(b && b.dueDate === dk) return; // already set
+  showDateDetectPopup(el, blockId, dk);
+}
+
+let dateDetectTimeout = null;
+function showDateDetectPopup(el, blockId, dk){
+  document.getElementById('dateDetectPopup')?.remove();
+  clearTimeout(dateDetectTimeout);
+
+  const popup = document.createElement('div');
+  popup.id = 'dateDetectPopup';
+
+  const isMob = document.body.classList.contains('is-mobile');
+  if(isMob){
+    popup.style.cssText = `position:fixed;left:12px;right:12px;bottom:80px;background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius);padding:16px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:1100;`;
+  } else {
+    const rect = el.getBoundingClientRect();
+    const top = Math.min(rect.bottom + 6, window.innerHeight - 170);
+    const left = Math.min(rect.left, window.innerWidth - 280);
+    popup.style.cssText = `position:fixed;top:${top}px;left:${left}px;background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow),0 4px 20px rgba(59,107,74,.15);z-index:1100;width:270px;`;
+  }
+
+  popup.innerHTML = `
+    <div style="font-size:12.5px;color:var(--accent);font-weight:600;margin-bottom:8px;">📅 Fecha detectada: ${formatLong(dk)}</div>
+    <input id="ddpNote" type="text" placeholder="Añade una nota para ese día (opcional)"
+      style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;margin-bottom:10px;box-sizing:border-box;"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+      onkeydown="if(event.key==='Enter')confirmDateDetect('${blockId}','${dk}')">
+    <div style="display:flex;gap:8px;">
+      <button onclick="confirmDateDetect('${blockId}','${dk}')" style="flex:1;padding:8px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">✓ Registrar</button>
+      <button onclick="document.getElementById('dateDetectPopup')?.remove()" style="flex:1;padding:8px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:none;font-family:'Nunito',sans-serif;font-size:13px;cursor:pointer;color:var(--text2);">Ignorar</button>
+    </div>`;
+  document.body.appendChild(popup);
+  setTimeout(()=>document.getElementById('ddpNote')?.focus(), 50);
+  dateDetectTimeout = setTimeout(()=>document.getElementById('dateDetectPopup')?.remove(), 10000);
+}
+
+function confirmDateDetect(blockId, dk){
+  const noteText = document.getElementById('ddpNote')?.value?.trim() || '';
+  document.getElementById('dateDetectPopup')?.remove();
+  clearTimeout(dateDetectTimeout);
+
+  // Set dueDate on this block
+  updateBlock(blockId, {dueDate: dk});
+
+  // Create or update target day with the note/event
+  if(noteText){
+    if(!state.days[dk]) state.days[dk] = makeDay(dk);
+    // Add as a task so it shows in pending section
+    const nb = makeBlock(noteText, 'task', 0);
+    nb.dueDate = dk;
+    state.days[dk].blocks.push(nb);
+    scheduleSave();
+  }
+  renderMain(); renderRightPanel(); renderCalendar();
+  showNotif(`📅 Registrado para ${formatLong(dk)}`);
+}
 
 function onBlockKey(e,el){
   const id=el.dataset.id; const blocks=getBlocks();
@@ -1118,7 +1266,26 @@ function setStatus(id,status){
 }
 function toggleType(id){ const b=blockById(id); if(!b)return; updateBlock(id,{type:b.type==='task'?'note':'task',status:'todo'}); renderMain(); showNotif(b.type==='task'?'→ Nota':'→ Tarea'); }
 function toggleCollapse(id){ const b=blockById(id); if(!b)return; updateBlock(id,{collapsed:!b.collapsed}); renderMain(); }
-function addFromToolbar(type){ if(drawerClosing) return; const blocks=getBlocks(); const nb=makeBlock('',type,0); blocks.push(nb); setBlocks(blocks); renderMain(); setTimeout(()=>{const el=document.querySelector(`[data-id="${nb.id}"]`);if(el)el.focus();},20); }
+function addFromToolbar(type){
+  if(drawerClosing) return;
+  const blocks = getBlocks();
+  // Check if last block is empty — if so, convert it instead of creating new
+  const last = blocks[blocks.length - 1];
+  if(last && (!last.text || !last.text.trim()) && last.type !== type && !['divider','h1','h2','quote'].includes(last.type)){
+    updateBlock(last.id, {type, status:'todo', done:false});
+    renderMain();
+    setTimeout(()=>{const el=document.querySelector(`[data-id="${last.id}"]`);if(el)el.focus();},20);
+    return;
+  }
+  // Otherwise create new only if last block has content or doesn't exist
+  if(last && (!last.text || !last.text.trim()) && last.type === type){
+    // Already has an empty block of same type — just focus it
+    setTimeout(()=>{const el=document.querySelector(`[data-id="${last.id}"]`);if(el)el.focus();},20);
+    return;
+  }
+  const nb=makeBlock('',type,0); blocks.push(nb); setBlocks(blocks);
+  renderMain(); setTimeout(()=>{const el=document.querySelector(`[data-id="${nb.id}"]`);if(el)el.focus();},20);
+}
 function addEnd(){ if(drawerClosing) return; addFromToolbar('note'); }
 
 // ── COMMENTS ──
